@@ -28,10 +28,10 @@
 #           tracks more often what everybody else is seeing and
 #           follows the most liquidity.  also support/resistance areas
 #           found using this method are most common.
-#
+###########################################################################
 
-# INITIALIZATION & SET WORKING DIRECTORIES
-suppressWarnings(try(rm(list=ls()),silent=TRUE))   #clears the workspace
+# Initialize workspace
+suppressWarnings(try(rm(list=ls()),silent=TRUE))   # clears the workspace
 switch(Sys.info()[['sysname']],
        Windows = {setwd("c:/Users/jharper/Dropbox/03_School/Programming/R/FileDirectory/")},
        Linux = {stop("hold on, this is a Linux Box!")},
@@ -72,7 +72,7 @@ switch(dataSource,
 
 ## Load Data From Quandl
 # s <- 1
-for (s in seq(my.tickers)){
+for (s in seq(my.tickers)) {
   try(
       x <- Quandl(code = paste(dataSource, my.tickers[s], month, sep = ""),
                   authcode = myCode, 
@@ -80,7 +80,7 @@ for (s in seq(my.tickers)){
                   type = "raw"
                   )
   )
-  if(exists("x")){
+  if (exists("x")) {
     ## Cleaning / Renaming columns
     if(dataSource == "OFDP/FUTURE_") {
       # cleaning ODFP database:
@@ -121,8 +121,7 @@ for (s in seq(my.tickers)){
 ## Save as csv
 tickers <- ls(pattern = "daily")
 # x <- tickers[s]
-for (s in seq(tickers))
-{
+for (s in seq(tickers)) {
   print(tickers[s])
   write.csv(get(tickers[s]), file = paste0(output.dir, tickers[s], ".txt"))
 }
