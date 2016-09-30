@@ -30,7 +30,7 @@
 #           found using this method are most common.
 ###########################################################################
 
-## Initialize workspace
+# Initialize workspace
 suppressWarnings(try(rm(list=ls()),silent=TRUE))   # clears the workspace
 switch (Sys.info()[['sysname']],
        Windows = {setwd("c:/Users/jharper/Dropbox/03_School/Programming/R/FileDirectory/")},
