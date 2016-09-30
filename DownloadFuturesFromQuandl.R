@@ -32,7 +32,7 @@
 
 # Initialize workspace
 suppressWarnings(try(rm(list=ls()),silent=TRUE))   # clears the workspace
-switch(Sys.info()[['sysname']],
+switch (Sys.info()[['sysname']],
        Windows = {setwd("c:/Users/jharper/Dropbox/03_School/Programming/R/FileDirectory/")},
        Linux = {stop("hold on, this is a Linux Box!")},
        Darwin ={setwd("/Users/harper/Dropbox/HarpFolders/04_Code/R/FileDirectory/")}
@@ -63,7 +63,7 @@ dataSource <- 2
 ## "GM", "SIM"   ## MCX Exchange ticker names
 ## "YG", "YI"    ## MCX Exchange real names
 
-switch(dataSource,
+switch (dataSource,
    "1" = {dataSource <- "OFDP/FUTURE_"}, # open financial data project
    # OFDP doesn't have ES Close prices for most of the series
    "2" = {dataSource <- "CHRIS/CME_"}, # continuous contracts
