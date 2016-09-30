@@ -5,3 +5,6 @@
 * add files to version control:  git add -A   
 * does this add the files to the repo on github? 
 ** if not:  git commit -m "description"
+
+
+https://www.atlassian.com/git/tutorials/setting-up-a-repository/
