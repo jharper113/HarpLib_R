@@ -1,0 +1,719 @@
+# ***************************************************
+#  BasicRFunctions.R
+#
+#  reference list of common tasks in R
+
+# ***************************************************
+#1.  naming a bunch of objects
+#2.  list attributes of an object
+#3.  subsetting objects
+#4.  remove missing (NA) values
+#5.  remove rows from a dataframe with NA values
+#6.  getting information for objects:
+#7.  setup workspace & working directory
+#8.  read / write
+#9.  for loop syntax
+#10. exploratory plots
+#11. convert objects
+#12. other control structs
+#13. comments
+#14. use a function from another script
+#15. setup working directory, clear variables
+#16. row sum/means and col sum/means shortcuts
+#17. split and lapply
+#18. error messages
+#19. order by a columnn value
+#20. check for directories/create new directory
+#21. download a file from the web
+#22. reading files
+#23. reading XML files
+#24. reading JSON files
+#25. using data.table
+#26. write xts/zoo files
+#27. return an object's name
+#28. given a vector of object names, return the contents
+#29. return a vector of trading days(weekends and holidays removed)
+#30. create a plot with two lines, two axes
+#31. quantstrat labelling workflow
+#32. fill in missing XTS data with NAs
+#33. Subset a time interval for multiple days
+#34. Update R from R
+#35. Zoom and Pan a chart
+
+
+# key trading packages
+#   HighFrequency: cleaning trade and quote data
+#   PerformanceAnalytics:  charting, analysis
+#   QuantStrat: strategy design
+#   TTRtests:  techincal analysis tests
+#   PBO: probably of backtest overfitting
+
+#################
+
+
+
+# #1.  naming a bunch of objects ------------------------------------------
+  x <- 1:3
+  names(x) <- c("first","second","third")
+  x
+
+
+
+# #2.  list attributes of an object ---------------------------------------
+  attributes(x)
+  
+
+# #3.  subsetting objects -------------------------------------------------
+  # example:
+  x <- matrix(1:6,2,3)
+  x
+  # method 1: use column number
+    x[,1]  # returns column 1
+    #single matrix elements, 1 row, or 1 column, are returned as a vector of 1 instead of as a matrix
+
+  # method 2: use subset and the name of a column
+  # subset testFrame, where there are no NAs in column 2, return the sulfate column
+    subset(testFrame, !is.na(testFrame[,2]), select = "sulfate")  #remove NAs from a named column
+
+  # method 3: use subset and column number
+    subset(testFrame, !is.na(testFrame[,3]), select = 3)   #remove NAs from column 3, return column 3
+
+  # method 4: filter NAs from a named-column, return the named-column
+    x <- tempframe[!is.na(tempframe$Col1)]$Col1
+
+  # method 5: remove NAs from column 2, return column 2
+    tempframe[!(is.na(tempframe[,2])),2]
+
+  # method 6: find complete cases from tempframe, return column 2
+    tempframe[complete.cases(tempframe[,2]),2]
+
+  # method 7: use filter function (for time series)
+    filter(f,x) # returns elements of x for which f is true
+
+  # example: find the number of obs that match 2 criteria
+    nrow(subset(mydata, mydata$RT == "H" & mydata$VAL == "24",2))
+
+  # method 8:  subset a dataframe using apply and either "all" or "any" functions
+    ## flag true/false for any row where all values are not 0
+    clean <- apply(xts.object, 1, function(row) all(row != 0 ))
+    ## subset the ones that aren't clean
+    xts.object[!clean, ]
+
+    ## flag true/false any row where any value == 0
+    dirty <- apply(xts.object, 1, function(row) any(row == 0 ))
+    ## subset the ones that are dirty
+    xts.object[dirty, ]
+
+
+# #4.  remove missing (NA) values -----------------------------------------
+  x<- c(1, 2, NA, 4, NA, 5)
+  bad <- is.na(x)
+  x[!bad]
+
+
+
+# #5.  remove rows from a dataframe with NA values ------------------------
+  airquality[1:6,]
+  good <- complete.cases(airquality)
+  airquality[good,][1:6,]
+
+
+
+# #6.  getting information for objects:  ----------------------------------
+  summary(x)
+  str(lm)  # shows the arguments you can send to lm function
+  str(airquality)  #tells you the type of data for each of the airquality columns
+  summary(airquality)  #gives you mean, median, etc.
+  class(x)
+  dim(x) #find number of rows/columns of a data frame
+  dim(x)[1] # number of rows
+  nrow(x) #number of rows
+  ncol(x)  #number of columns
+
+
+
+# #7.  setup workspace & working directory --------------------------------
+  suppressWarnings(try(rm(list=ls()),silent=TRUE))   #clears the workspace
+  setwd("C:/Users/jharper/Dropbox/03_School/Coursera_02_R_Programming/data")   #wd at work
+  setwd("/Users/harper/Dropbox/03_School/Programming/R/FileDirectory/data/")   #mac directory
+  setwd("C:/Users/harper/Dropbox/03_School/Coursera_02_R_Programming/data")     #wd at home
+  getwd()
+  ls()  #shows what objects are in the working directory
+  dir()
+
+
+
+# #8.  read / write -------------------------------------------------------
+  x <- read.csv(file="data/hw1_data.csv")
+  testFrame <- read.table(file = "./testFrame.csv")
+  write.table(testFrame, file = "./testFrame.csv")
+
+
+
+# #9.  for loop syntax ----------------------------------------------------
+  #   a. iterate from element 1 to nrows(x)
+         for(i in 1:nrows(x)) {
+           print (x[i]) 
+         }
+#               supposedly this is is better/faster:
+#               for(i in seq(temp)) print(temp[i])
+
+  #   b. automatically calculate the length of a vector
+         for(i in seq_along(x)){
+           print (x[i]) 
+         }
+  #
+  #   c. iterate over each object
+         for (element in testvect){
+           if (element > 15) print (element) 
+         }
+  #
+  #   d. if for loop has a single expression, don't need curly braces
+         for (i in 1:4) print(x[i])
+  #
+  #     e. nested for-loops
+         for (i in seq_len(nrow(x))){
+           for(j in seq_len(ncol(x))){
+             print(x[i,j])
+           }
+         }
+      e. do a thing on each element of a subset of a dataframe
+        for(row in tempframe[(tempframe$nobs > 500),]){
+          print(tempframe$corr)
+         }
+
+
+# #10. exploratory plots --------------------------------------------------
+  # One Dimensional
+  # summary
+    summary(dataset$columnA)  # outputs min, med, max, quartiles
+  # boxplot
+    boxplot(dataset$columnA, col = "blue")
+  # histogram
+    hist(dataset$columnA, col = "green")
+    rug(dataset$columnA)
+  # histogram with modified bins (called "breaks")
+    hist(dataset$columnA, col = "green", breaks = 100)
+  # extra features
+    abline(h = 12)  # horizontal line at y = 12
+    abline(v = 12, lwd = 2)  # vertical line at 12, width of 2
+    abline(v = median(dataset$columnA), col = "magenta", lwd = 4) # line at median
+  # barplot
+    barplot(table(dataset$columnA), col = "wheat", main = "This is the main title")
+
+  # Two Dimensional
+  # multiple box plots
+    boxplot(columnA ~ columnB, data = dataset, col = "red")  #box plot for each colB
+  # multiple histograms
+    par(mfrow = c(2,1), mar = c(4, 4, 2, 1)) # think this sets the params for the grid
+    hist(subset(dataset, columnB == "factor1")$columnA, col = "green") #1st hist is only where column B equals factor1
+    hist(subset(dataset, columnB == "factor2")$columnA, col = "blue") #2nd hist is where column B equals factor2
+  # scatterplot
+    with(dataset, plot(columnA, columnB))
+    abline(h=12, lwd = 2, lty = 2) # horizontal line at 12, width of 2, type = dashed line
+  # scatterplot using color
+    with(dataset, plot(columnA, columnB, col = columnC)) # colored based on factors in column C
+  # multiple scatterplots
+    par(mfrow = c(1,2), mar = c(5, 4, 2, 1))  #set up grid dimensions
+    with(subset(dataset, columnB == "factor1"), plot(columnXaxis, columnYaxis, main = "this is the title"))
+    with(subset(dataset, columnB == "factor2"), plot(columnXaxis, columnYaxis, main = "this is the title"))
+
+  #more on boxplots
+  #from this website:
+  #http://www.burns-stat.com/first-step-towards-r-spreadsheets/#comments
+
+      # downloads the table
+      # separates values by comma
+      # the first row is a header row
+      superbowl <- read.table("http://www.portfolioprobe.com/R/blog/dowjones_super.csv", sep=",", header=TRUE)
+      View(superbowl) # view the dataframe
+
+      # creates a box plot of the return against the winner
+      # first column is the x-variable, the 2nd is the y-variable
+      x11()
+      plot(DowJonesSimpleReturn ~ Winner, data=superbowl)
+
+
+      # same plot with more bells and whistles
+      x11()
+      plot(100*DowJonesSimpleReturn ~ Winner, data=superbowl, ylab="Return(%)",col="powderblue")
+
+      # how big is the dataframe?
+      dim(superbowl)
+
+
+
+# #11.  convert objects ---------------------------------------------------
+  testv <- as.character(testv)    #converts 1, 2, 3 to "1", "2", "3"
+
+
+
+# #12. other control structs ----------------------------------------------
+  #   a. if, elseif, else
+  #
+  #   b. while:  easily readable, but can run infinitely
+       count <- 5
+       while (count > 2 && count <- 10) {
+         print(count)
+         count <- count + 3
+       }
+  #
+  #   c. repeat:  must use break, good for optimization and break is called when estimate reaches termination condition
+       repeat {
+           print(x)
+           break
+       }
+
+
+
+
+# #13. comments -----------------------------------------------------------
+  # Beginning of file:
+# /********************************************************
+#   * Analyze -- analyze the complexity of a program       *
+#   *                                                      *
+#   * Purpose:                                             *
+#   *      This program produces a set of statistics that  *
+#   *      are supposed to tell you how complex a program  *
+#   *      is.                                             *
+#   *                                                      *
+#   * Author: John Jones.                                  *
+#   *                                                      *
+#   * Copyright 1999 by John Jones.                        *
+#   *                                                      *
+#   * Warning: Compiling with optimization causes          *
+#   *      incorrect code to be generated.                 *
+#   *                                                      *
+#   * Restrictions: Works only on error-free C files.      *
+#   *      Does not know about pre-processor directives.   *
+#   *                                                      *
+#   * Algorithms: Uses a classic unbalanced binary tree    *
+#   *      for a symbol table.                             *
+#   *                                                      *
+#   * References: "Software complexity measurements",      *
+#   *      Flying Fingers Newsletter, May 5, 1995.         *
+#   *                                                      *
+#   * Output file format for raw data file:                *
+#   *              <magic number> (AC_DATA_MAGIC)          *
+#   *              <# statistics that follow>              *
+#   *                 <stat table index>                   *
+#   *                 <value>                              *
+#   *                 (Repeat for each stat.)              *
+#   *                                                      *
+#   * Revision history:                                    *
+#   *      1.0 July 5, 1995        Ralph Smith             *
+#   *              Initial Version.                        *
+#   *                                                      *
+#   *      1.5 Nov 5, 1995         Bill Green              *
+#   *              Add comment / code ratio                *
+#   *                                                      *
+#   *      2.0 Jan 8, 1996         Bill Green              *
+#   *              Extensive rework of the report gen.     *
+#   *                                                      *
+#   *      2.1 Jan 30, 1997        Bill Green              *
+#   *              Ported to Windows-95.                   *
+#   *                                                      *
+#   * Note: This program generates a lot of numbers        *
+#   *      about the target program.  Not all are useful.  *
+#   ********************************************************/
+
+  #function heading
+  # /********************************************************
+  #   * find_lowest -- find the lowest number in an array    *
+  #   *                                                      *
+  #   * Parameters                                           *
+  #   *      array -- the array of integers to search.       *
+  #   *      count -- the number of items in the array.      *
+  #   *                                                      *
+  #   * Returns                                              *
+  #   *      The index of the lowest number in the array     *
+  #   *      (in case of a tie, the first instance of the    *
+  #             *      number.)                              *
+  #   ********************************************************/
+
+
+
+
+# #14. use a function from another script ---------------------------------
+  source("corr.R")
+
+
+
+# #15. setup working directory, clear variables ---------------------------
+  # suppressWarnings(try(rm(list=ls()),silent=TRUE))   #clears the workspace
+  # setwd("C:/Users/jharper/Dropbox/03_School/Coursera_02_R_Programming/data")       #wd at work
+  # setwd("C:/Users/harper/Dropbox/03_School/Coursera_02_R_Programming/scripts")     #wd at home
+
+
+
+# #16. row sum/means and col sum/means shortcuts --------------------------
+  rowSums = apply(x, 1, sum)
+  rowMeans = apply(x, 1, mean)
+  colSums = apply (x, 2, sum)
+  colmeans = apply(x, 2, mean)
+
+
+
+# #17. split and lapply ---------------------------------------------------
+  takes an object, splits into groups determined by factor(s)
+  arguments:
+    x = vector, list, or frame
+  f is a factor or list of factors
+  drop:  indicate whether empty factors should be dropped
+  used often with lapply
+  Example: split airquality dataset by month, return column means per month
+    library (datasets)
+    head(airquality)
+    s <- split(airquality, airquality$Month)
+    lapply(s, function(x) colMeans(x[, c("Ozone", "Solar.R", "Wind")]))
+
+
+
+# #18. error messages -----------------------------------------------------
+    message("this is an error message")
+    if(test == TRUE) stop("the test came back as TRUE")
+
+
+
+# #19.order by a columnn value --------------------------------------------
+  attach(mtcars)  # adds mtcars to the environment search, so you can use mpg
+                  # without using mtcars$mpg
+  head(mtcars)
+  temp <- mtcars[order(mpg),]
+
+
+
+# #20.  check for directories/create new directory ------------------------
+  if(!file.exist("data")){
+    dir.create("data")
+  }
+
+
+
+# #21. download a file from the web ---------------------------------------
+  fileUrl <- "www.website.com/file"
+  download.file(fileUrl, destfile = "../data/filename.csv", method = "curl")
+  list.files("../data")
+  #notes
+    # if file start https, need to use curl
+
+
+# #22. reading files ------------------------------------------------------
+   read.table()
+#     the main function for reading data into r
+#     reads data into RAM
+#     important parameters:  file, header, sep, row.names, nrows
+#     other params
+#     quote:  tells r if there any quoted values
+#     na.strings:  tells are the string that means NA
+#     nrows:  how many rows of the file to read
+#     skip:  number of lines to skip before starting to read
+  read.csv()
+#     sets sep = "," and header = TRUE
+  read.xslx() and read.xslx2()
+#     example:
+        library(xslx)
+        mydata <- read.xslx("./data/myspreadsheet.xslx", sheetIndex = 1, header = TRUE)
+#     example 2: reading specific rows and columns
+        colIndex <- 2:3
+        rowIndex <- 1:4
+        mydata <- read.xslx("./data/myspreadsheet.xslx", sheetIndex = 1, header = TRUE,
+                              colIndex = colIndex, rowIndex = rowIndex)
+# other notes
+  write.xslx(): writes out excel files with similar arguments
+  read.xslx2(): faster than read.xslx, but may be unstable when subsetting rows & cols
+  XLConnect package has more options for excel files
+
+
+
+
+# #23. reading XML files --------------------------------------------------
+#   example
+      install.packages("XML")
+      library(XML)
+      fileURL <- "http://www.w3schools.com/xml/simple.xml"
+      doc <- xmlTreeParse(fileURL, useInternal = TRUE)
+      rootNode <- xmlRoot(doc)
+      xmlName <- rootNode
+      names(rootNode)
+#   directly access parts of the document
+      rootNode[[1]]
+      rootNode[[1]][[1]]
+#   programmitically extract parts of the XML file
+      xmlSApply(rootNode,xmlValue)
+#   get the items on the menu and prices
+      xpathSApply(rootNode, "//name",xmlValue)  #returns a char vector of names
+      xpathSApply(rootNode, "//price",xmlValue)  #returns a char vector of prices
+#   example2:
+      # "//" finds a node at any level
+      # node[@attr-name="bob"]  finds a node with attribute name = bob
+      fileURL <- "http://espn.go.com/nfl/team/_/name/bal/baltimore-ravens"
+      doc <- htmlTreeParse(fileURL, useInternal = TRUE)
+      teams <- xpathSApply(doc, "//li[@class='team-name']",xmlValue)
+
+
+
+# #24. reading JSON files -------------------------------------------------
+#   java script object notation
+#     lightweight data storage
+#     common format for data from APIs
+#     similar to XML, but different syntax
+#     stored as double, strings, boolean, array [a,b], object (curly braces, key:value pairs)
+#   example 1
+      install.packages("jsonlite")
+      library(jsonlite)
+      jsonData <- fromJSON("https://api.github.com/users/jtleek/repos")
+      names(jsonData)
+#   nested objects in JSON
+      names(jsonData$owner)
+      jsonData$owner$login
+#   writing dataframes to JSON
+      myjson <- toJSON(iris,prett = TRUE)
+      cat(myjson)
+#   convert back from JSON to data table
+      my.iris <- fromJSON(myjson)
+      head(my.iris)
+#   further resources
+      www.json.org
+
+
+
+
+
+# #25. using data.table ---------------------------------------------------
+#   written in C, so much faster
+#   uses all the same commands as data.frame
+#   example
+      install.packages("data.table")
+      library(data.table)
+      # create a dataframe with columns x, y, z
+      # x and z are 9 normally distributed, y repeats a,b,c
+      mydt <- data.table(x=rnorm(9),y=rep(c("a","b","c"),each=3),z=rnorm(9))
+#   tables():  shows all the tables in memory
+#   subsetting
+      mydt[2,]   # return row 2
+      mydt[mydt$y=="a"]  # return rows where column y contains the value "a"
+      mydt[c(2,3)]  # return multiple rows
+#   calculating mean, sum, etc for variables
+      mydt[, list(mean(x),sum(z))]
+      mydt[,table(y)]  #returns the factors that appear in col y, how many times they appear
+#   adding new columns
+      mydt[,w:=z^2]   # creates a new W column using a formula
+      mydt2 <- mydt   # appears to copy by reference - changes affect the original too
+      mydt[,y:=2]
+#   multiple operations
+      mydt[,m:={tmp <- (x+z); log2(tmp+5)}]  # first calculates tmp variable, then calcs the rest
+#   plyr like operations
+      mydt[,a:=x>0]   # creates a true/false column based on this condition
+      mydt[,b:=mean(x+w),by=a]   # finds the means of 2 subsets by the factors
+        # in column a
+#   special variables
+      set.seed(1234)
+      mydt <- data.table(x = sample(letters[1:3], 1E5, TRUE)) #1E5 = 100,000
+      tail(mydt)
+      mydt[, .N, by = x]  # shows the number of repitions of each factor?
+#   keys
+      mydt <- data.table(x=rep(c("a","b","c"),each=100),y=rnorm(300))
+      setkey(mydt,x)  #sorts by column, uses "by reference"
+      mydt['a']
+#   joins
+      mydt1 <- data.table(x = c('a','a','b', 'dt1'), y = 1:4)
+      mydt2 <- data.table(x = c('a','b', 'dt2'), z = 5:7)
+      setkey(mydt1, x); setkey(mydt2, x)
+      merge(mydt1, mydt2)   #inner joins the two data tables
+
+
+
+# 26. write xts/zoo files ---------------------------------------
+      write.zoo(x=myData, file = "thisIsAFile")
+
+
+# 27. return an object name -----------------------------------------------
+    # if you want to return the name of an object, not the contents
+
+    myObject <- matrix(1:10, nrow = 2,ncol = 5)
+    # returns the string "myObject" instead of the contents of myObject
+    deparse(substitute(myObject))
+
+    # another example:
+        myObject <- matrix(1:8, 2,4)
+        holdsName <- "myObject"
+        holdsName  # returns char "myObject"
+        cat(holdsName)  # returns myObject
+        get(holdsName)[1,2]  # gets the value at row 1, column 2 from myObject
+        myObject[1,2]  # same as above
+
+        # returns holdsName, if you explictly want to return the pointer's name
+        substitute(holdsName)
+
+        # returns the char "holdsName" if you explicitly want the string
+        deparse(substitute(holdsName))
+
+        # If you want to execute the contents of an object:
+            objectName <- "print('I have executed the command stored in objectName')"
+            objectName   # just prints the contents to the screen
+            eval(parse(text = objectName))  # executes the command stored in the object
+
+# 28. given a vector of object names, return the contents -----------------
+
+    # if frame1 and frame2 are both data frames,
+    # you can use get() with a vector of names, good for for-loops
+    frame1 <- as.data.frame(matrix(1:10, nrow=5, ncol=2))
+    frame2 <- as.data.frame(matrix(1:9, nrow=3, ncol=3))
+    myframes <- c("frame1", "frame2")
+    get(myframes[1])   # returns the contents of frame1, as if you called frame1 directly
+
+
+
+# #29. return a vector of trading days(weekends and holidays remov --------
+
+    # Get a vector of trading days. These are week days, with holidays removed. The trading days
+    # are relative to the New York Stock Exchange (NYSE).
+    #
+    # startDate and endDate are Date objects. The function returns a date ordered vector of Date
+    # objects which are the trading days.
+    #
+    # This function requires the timeDate package
+    #
+    tradingCalendar = function( startDate, endDate)
+    {
+        require(timeDate)
+        timeSeq = timeSequence(from=as.character(startDate),
+                               to=as.character(endDate),
+                               by="day", format = "%Y-%m-%d",
+                               zone = "NewYork", FinCenter = "America/New_York")
+        ix = as.logical(isWeekday(timeSeq, wday=1:5))
+        tradingDays = timeSeq[ix]
+        startYear = as.POSIXlt(startDate)$year + 1900
+        endYear = as.POSIXlt(endDate)$year + 1900
+        tradingDays.dt = as.Date(tradingDays)
+        hol = as.Date(holidayNYSE(startYear:endYear))
+        ix = which(tradingDays.dt %in% hol)
+        tradingDays.dt = tradingDays.dt[-ix]
+        return(tradingDays.dt)
+    } # tradingCalendar
+
+
+
+# #30. create a plot with two lines, two axes -----------------------------
+    # A Silly Axis Example
+
+    # specify the data
+    x <- c(1:10); y <- x; z <- 10/x
+
+    # create extra margin room on the right for an axis
+    par(mar=c(5, 4, 4, 8) + 0.1)
+
+    # plot x vs. y
+    plot(x, y,type="b", pch=21, col="red",
+       yaxt="n", lty=3, xlab="", ylab="")
+
+    # add x vs. 1/x
+    lines(x, z, type="b", pch=22, col="blue", lty=2)
+
+    # draw an axis on the left
+    axis(2, at=x,labels=x, col.axis="red", las=2)
+
+    # draw an axis on the right, with smaller text and ticks
+    axis(4, at=z,labels=round(z,digits=2),
+      col.axis="blue", las=2, cex.axis=0.7, tck=-.01)
+
+    # add a title for the right axis
+    mtext("y=1/x", side=4, line=3, cex.lab=1,las=2, col="blue")
+
+    # add a main title and bottom and left axis labels
+    title("An Example of Creative Axes", xlab="X values",
+       ylab="Y=X")
+
+
+# 31. quantstrat labelling workflow ---------------------------------------
+#     Function  
+#         can return multiple columns of info
+#         whatever the column name will be visible to the indicator
+#         ex: for ATR,  there is atr, tr, truehigh, truelow
+# 
+#     Indicator
+#         name:  looks up the function's name defined in the section above
+#         label: uses this label in the mktdata object
+#         ex:   if label=ATR, then the trueHigh column looks like trueHigh.ATR
+#     
+#      Signals
+#         column: uses this to determine what mktdata column to look at
+#         ex: column="ExitEMA" looks up the .ExitEMA column in mktdata
+# 
+#     Rules 
+#         threshold: for stops, threshold param uses mktdata column
+#         ex:  for threshold="StopDist.ATR", this rule grabs the value of the
+#              StopDist.ATR column in mktdata
+#         label: labels for stops are used in the Rule column in the OrderBook
+#         ex:  ATRStopLoss.Long is the value in the rule column for each ATR stop
+#              that was placed
+# 
+
+
+# 32. Fill in missing XTS data with NAs -----------------------------------
+## if a time series has missing data, esignal would show the previous close 
+## populating for that time, and technical indicators would want/need something
+## there. Here's a way to fill empty time slots:
+
+## load example data, create missing entry
+rm(missingTimeStamps, newIndex)
+require(quantstrat)
+data(amzn)
+amzn <- amzn[(1:10),]
+amzn <- amzn[-3,]
+
+## create time interval
+start <- first(index(amzn))
+end   <- last(index(amzn))
+range <- paste(start, end, "M", sep = "/")
+## Y = years, m = months, d = days, H = hours, M = minutes, S = sec
+
+## create new time index
+newIndex <- timeBasedSeq(range)
+
+## create "fake instrument" and bind to data
+missingTimeStamps <- xts(rep(NA, length(newIndex)), newIndex)
+
+
+## merge, remove garbage but keep OHLCV columns
+amzn <- merge(missingTimeStamps, amzn, all.x = TRUE)[, c(-1,-7)]
+
+## overwrite the NA values 
+amzn.ohlc <- na.locf(amzn[,1:4] ) ## by carrying the last observation forward
+amzn.v    <- na.approx(amzn[,5]) ## by interpolating the NA
+amzn      <- cbind(amzn.ohlc, amzn.v)
+
+
+
+# 33. Subset a time interval for multiple days ----------------------------
+rm(missingTimeStamps, newIndex)
+require(quantstrat)
+x <- minute.ES.NT["2006-12"]
+x['T07:25/T07:30']   # just the 7:25 to 7:30 for all days in December 2006
+
+
+
+# 34. Update R from R -----------------------------------------------------
+
+install.packages("installr"); require(installr) #load / install+load installr
+updateR()
+
+
+
+
+# 35.  Zoom and Pan a chart -----------------------------------------------
+
+install.packages("devtools")
+library(devtools)
+install_github("timelyportfolio/htmlwidgets");library(htmlwidgets)
+devtools::install_github("timelyportfolio/svgPanZoom")
+library(svgPanZoom)
+source("http://bioconductor.org/biocLite.R")
+biocLite("SVGAnnotation")
+#devtools::install_github("timelyportfolio/SVGAnnotation");
+library(SVGAnnotation)
+
+getSymbols("SPY")
+svgPanZoom(svgPlot({chartSeries(SPY)},width = 12, height = 8))
+

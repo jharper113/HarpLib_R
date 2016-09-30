@@ -1,0 +1,41 @@
+# Working with strings in R
+
+
+https://www.r-bloggers.com/basic-text-string-functions-in-r/
+
+connections
+    gzfile
+    bzfile
+    unz
+    url
+    file
+
+charmatch(x, table) = matches pattern x in table (converted to a vector).  returns a vector of the same length
+    
+nchar()
+	gives length of strings in a vector
+
+grep 
+	pattern search.  if value = True, returns the string, if value = False, returns the indices of the elements that match
+grepl
+	logical grep
+
+paste
+	concatenates vectors.  use paste0 if there is no sep (faster)
+
+readLines(file, sep, stringsAsFactors, fill, blank.lines.skip) = reads a line at a time, returns a character vector, each element is a line 
+read.table
+read.csv
+
+strsplit(x, split) 
+	splits the string "x" based on a separator "split".  "[.]",  "" splits into individual characters
+
+strtrim(x, width)
+	trims characters to specified widths
+
+sub(pattern, replacment, x) 
+	find/replace
+
+substr(x, start, stop)
+	extracts a substring from a string
+

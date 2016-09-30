@@ -1,0 +1,111 @@
+###########################################################################
+
+## Notes on charting packages
+
+
+
+###########################################################################
+
+HarpColors <- function(color, set = "bold") {
+    # 3 sets of colors:
+    x <- list()
+    # bold set
+    x$bold <- c("#e41a1c", # 1 red
+    "#377eb8", # 2 blue
+    "#4daf4a", # 3 green
+    "#984ea3", # 4 purple
+    "#ff7f00", # 5 orange
+    "#f781bf", # 6 pink
+    "#a65628", # 7 brown
+    "#999999", # 8 grey
+    "#ffff33") # 9 yellow
+    
+    # pastel set
+    x$pastel <- c("#8dd3c7", # light blue
+    "#ffffb3", # light yellow
+    "#bebada", # light purple
+    "#fb8072", # light red
+    "#80b1d3", # light blue
+    "#fdb462", # light orange
+    "#b3de69", # light green
+    "#fccde5", # light pink
+    "#d9d9d9") # light grey
+    
+    # light candle chart set
+    x$ltcandle <- c("#fff7fb", # very light grey
+    "#a6bddb", # darker blue grey
+    "#c994c7", # grey-red
+    "#edf8fb", # light green
+    "#d4b9da", # light red
+    "#c994c7", # darker red
+    "#c7e9c0", # green 2
+    "#f2f2f2", # grey
+    "#fddaec", # pink
+    "#e5d8bd") # brown
+    
+    # colorblind set
+    x$cb <- c("#a6cee3", # light blue
+    "#1f78b4", # dark blue
+    "#b2df8a", # light green
+    "#33a02c", # dark green
+    "#fb9a99") # pink
+    return(x[[set]][color])
+}
+
+
+## Sample Candle Stick Plot
+## Notes:
+## 		theme_bw()   --> different themes are available, i like this one a lot, very simple
+output <- ggplot(environment = environment(), data = x.df, aes(x = Index, y = Close, ymin = Low, 
+                                    ymax = High, lower = candle.bottom, 
+                                    middle = 0, upper = candle.top)) + 
+    geom_boxplot(stat = 'identity', colour = "black",  
+                 aes(fill = fill.color, color = factor(fill.color), 
+                     group = Index)) + 
+    scale_fill_manual(values = c(dn.color, up.color, 'white')) +
+    theme_bw() +
+    guides(fill = FALSE, color = FALSE) +
+    theme(axis.title.x = element_blank()) +
+    theme(axis.title.y = element_blank()) +
+    ggtitle(chart.title) +
+    theme(plot.title = element_text(hjust = 0)) 
+
+
+## Another chart style with lots of params
+# chart.TimeSeries(summary.cm.returns[, paste0("cm.returns.", best.parametersets)],
+#                  colorset = colorset, 
+#                  legend.loc = "topleft", 
+#                  main = "Cumulative Returns - 10 Best ParameterSets",
+#                  #period.areas = cycles.dates, 
+#                  #period.color = "lightblue", 
+#                  #event.lines = risk.dates, 
+#                  #event.labels = risk.labels, 
+#                  #event.color = "red", 
+#                  date.format = "%Y-%m-%d",
+#                  ylab = "cumulative returns",
+#                  auto.grid = FALSE, 
+#                  #event.lines= c("2014-10-01", "2014-11-01", "2014-12-01", "2015-01-01"),
+#                  #event.color = "red",
+#                  lwd = 2)
+# dev.copy(device = pdf, paste0(folder.charts, "/", paste("chart.cmReturns", "pdf", sep = ".")))
+# dev.off()
+
+
+
+## Plot.XTS-style Equity Curves
+png(paste0(folder.charts, "/", paste("chart.cmReturns", "png", sep = ".")), width = 640, height = 567, units = "px")
+chart.all.cm.returns <- plot.xts(summary.cm.returns[, paste0("cm.returns.", best.parametersets)], main = "Cumulative Returns for 10 Best Parameter Sets", col = colorset, lwd = 3, legend.loc = "topleft", auto.legend = TRUE)
+print(chart.all.cm.returns)
+dev.off()
+
+
+## Save summary objects (charts, objective functions, cm.pnl, etc): pattern = "summary"
+summary.data <- paste(my.path, "SummaryData.Rdata", sep = "/")
+save(list = c(SearchAndExclude("chart", "folder"), SearchAndExclude("summary")), file = summary.data)
+# save(list = SearchAndExclude("results"), file = all.data)
+
+## GG save function
+ggsave(filename = paste0(folder.charts, "/", paste("chart.cmReturns-stacked", "pdf", sep = ".")))
+
+
+
