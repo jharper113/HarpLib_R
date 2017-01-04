@@ -2,7 +2,10 @@
 
 #   R Code Template
 
-#   Description of what was this script does
+#   Description:
+#     Template to quickly import and   
+#     get an overview of a dataset
+#
 #   Inputs
 #   Outputs
 
@@ -18,6 +21,9 @@
 #       Darwin ={setwd("/Users/harper/Dropbox/03_School/Programming/R/FileDirectory/")}
 # )
 library(tidyverse)
+# library(readxl)
+
+
 # source(file = "./HarpFunctions.R")
 
 
@@ -52,34 +58,47 @@ SampleFunction <- function(arg1, arg2, arg3, verbose = FALSE) {
 
 # Main --------------------------------------------------------------------
 
-# Import data 
-x <- read_csv(file = file.input, 
+# Import
+df <- read_csv(file = file.input,
          n_max =  10 * 1000,
-         col_types = cols(col1 = col_double(), col2 = col_datetime())
+         col_types = cols("cin")
          )
-
-# Tidy data
-gather(data = x, key = col1, value = col2)
-spread(data = x, key = col1, value = col2)
-
-# Transform 
-x %>% 
-  filter(col1 > 3, col2 != 10) %>% 
-  select() %>% 
-  mutate() %>% 
-  arrange() %>% 
-  summarise() %>% 
-  group_by() %>%
+# df <- readRDS(file.input)
+# df <- read_excel(file.input)
+# df <- read_file()  # reads into a string  
   
-# Visualize  
-  ggplot2() + 
+# Explore
+dim(df)
+str(df)
+head(df)
+tail(df)
+sample_n(df, 10)
+summary(df)
+  
+# Tidy data
+gather(data = df, key = col1, value = col2)
+spread(data = df, key = col1, value = col2)
+  
+# Transform
+df %>%
+  select(col1, col2) %>%
+  filter(col1 > 3, col2 != 10) %>%
+  mutate() %>% # add variables
+  arrange() %>%   # reorder rows
+  rename() %>% # rename variables
+  summarise() %>% # generate summary statistics
+  group_by() %>%
+
+# Visualize
+  ggplot2() +
     geom_point(mapping = aes(x = col1, y = col2))
 
 # Print output to the console
-cat("\n\n-------------------------\n")
-cat("Print output to the console\n\n")
-cat(date())
-cat("\n")
+cat("\n\n-------------------------\n", file = file.log, append = TRUE)
+cat("Print output to the console\n\n", file = file.log, append = TRUE)
+cat(date(), file = file.log, append = TRUE)
+cat("\n", file = file.log, append = TRUE)
 
 # Save output
 ggsave()
+saveRDS(
